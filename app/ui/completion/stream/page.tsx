@@ -1,53 +1,60 @@
-"use client"
-import { useState } from "react"
-import { useCompletion } from '@ai-sdk/react'
+"use client";
+
+import { useState } from "react";
+import { useCompletion } from "@ai-sdk/react";
+import ChatInput, { type ActionOption } from "../../common component/ChatInput";
 
 export default function StreamPage() {
-    const { input, handleInputChange,
-        handleSubmit,
-        completion, isLoading, error, setInput
-    } = useCompletion({ api: "/api/completion/stream" })
+    const { input, handleInputChange, handleSubmit, completion, isLoading, setInput } =
+        useCompletion({ api: "/api/completion/stream" });
+
+    const handleAction = (action: ActionOption) => {
+        console.log("Action chosen:", action);
+    };
+
+    const submitFun = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        handleSubmit(e);
+        setInput("")
+    };
 
     return (
-        <div className="flex flex-col min-h-screen bg-gray-50" >
+        // h-screen + flex-col ensures the container takes full height
+        <main className="flex h-screen flex-col bg-[#131314] text-white overflow-hidden">
 
-            {error &&
-                <div className="p-4 bg-red-100 text-red-700 border border-red-400 rounded mb-4">
-                    <p>{error.message}</p>
-                </div>
-            }
-            {
-                isLoading && <p className="text-black mb-2">Loading...</p>
-            }
+            {/*  Response Area- flex-1 + overflow-y-auto makes it scroll internally */}
+            <div className="flex-1 overflow-y-auto w-full max-w-2xl mx-auto px-4 py-8">
+                <div className="flex flex-col justify-center min-h-full">
+                    {!completion && !isLoading && (
+                        <h1 className="text-3xl font-semibold text-gray-300 text-center">
+                            What's next, Ashutosh?
+                        </h1>
+                    )}
 
-            {
-                completion && <div className="text-black mb-4">{completion}</div>
-            }
-            {/* Input Area (Centered at the bottom) */}
-            < footer className="w-full p-6 bg-white border-t border-gray-200" >
-                <div className="max-w-2xl mx-auto" >
-                    <form className="flex gap-3 w-full" onSubmit={(e) => {
-                        e.preventDefault()
-                        setInput("")
-                        handleSubmit(e)
-                    }}>
-                        <input
-                            type="text"
-                            placeholder="Ask me what you want..."
-                            value={input}
-                            onChange={handleInputChange}
-                            className="flex-1 px-4 py-3 text-black rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
-                        />
-                        <button
-                            type="submit"
-                            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
-                            disabled={isLoading}
-                        >
-                            Send
-                        </button>
-                    </form>
+                    {(completion || isLoading) && (
+                        <div className="w-full text-left">
+                            <p className="text-lg leading-relaxed text-gray-100 whitespace-pre-wrap">
+                                {completion}
+                            </p>
+                            {isLoading && (
+                                <span className="inline-block mt-2 animate-pulse text-blue-400">●</span>
+                            )}
+                        </div>
+                    )}
                 </div>
-            </footer >
-        </div >
-    )
+            </div>
+
+            
+            <div className="w-full pb-8 pt-4 bg-[#131314]">
+                <ChatInput
+                    input={input}
+                    handleInputChange={handleInputChange}
+                    onSubmit={submitFun}
+                    onActionSelect={handleAction}
+                    onMicToggle={() => console.log("Mic toggled")}
+                    isLoading={isLoading}
+                />
+            </div>
+        </main>
+    );
 }
