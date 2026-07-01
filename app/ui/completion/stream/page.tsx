@@ -3,7 +3,10 @@ import { useState } from "react"
 import { useCompletion } from '@ai-sdk/react'
 
 export default function StreamPage() {
-    const { input, handleInputChange, handleSubmit, completion, isLoading, error } = useCompletion({ api: "/api/completion/stream" })
+    const { input, handleInputChange,
+        handleSubmit,
+        completion, isLoading, error, setInput
+    } = useCompletion({ api: "/api/completion/stream" })
 
     return (
         <div className="flex flex-col min-h-screen bg-gray-50" >
@@ -23,7 +26,11 @@ export default function StreamPage() {
             {/* Input Area (Centered at the bottom) */}
             < footer className="w-full p-6 bg-white border-t border-gray-200" >
                 <div className="max-w-2xl mx-auto" >
-                    <form className="flex gap-3 w-full" onSubmit={handleSubmit}>
+                    <form className="flex gap-3 w-full" onSubmit={(e) => {
+                        e.preventDefault()
+                        setInput("")
+                        handleSubmit(e)
+                    }}>
                         <input
                             type="text"
                             placeholder="Ask me what you want..."
@@ -40,7 +47,7 @@ export default function StreamPage() {
                         </button>
                     </form>
                 </div>
-            </footer>
-        </div>
+            </footer >
+        </div >
     )
 }
