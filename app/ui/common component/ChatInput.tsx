@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, type ChangeEvent, type FormEvent } from "react";
-import { Plus, Mic, ChevronDown, Paperclip, HardDrive, Image, Layers, ArrowUp } from "lucide-react";
+import { Plus, Mic, ChevronDown, Paperclip, HardDrive, Image, Layers, ArrowUp, SquareStop } from "lucide-react";
 
 export type ActionOption = "upload" | "drive" | "create-image" | "canvas";
 
@@ -9,8 +9,9 @@ interface ChatInputProps {
     input: string;
     handleInputChange: (e: ChangeEvent<HTMLInputElement>) => void;
     onSubmit: (e: FormEvent<HTMLFormElement>) => void;
-    onActionSelect: (action: ActionOption) => void;
-    onMicToggle: () => void;
+    onActionSelect?: (action: ActionOption) => void;
+    onStop?: () => void;
+    onMicToggle?: () => void;
     selectedModel?: string;
     isLoading: boolean;
 }
@@ -22,7 +23,8 @@ export default function ChatInput({
     onActionSelect,
     onMicToggle,
     selectedModel = "Flash-Lite",
-    isLoading
+    isLoading,
+    onStop
 }: ChatInputProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
@@ -57,7 +59,13 @@ export default function ChatInput({
                                 { label: "Create image", action: "create-image", icon: <Image size={20} /> },
                                 { label: "Canvas", action: "canvas", icon: <Layers size={20} /> },
                             ].map((item) => (
-                                <button key={item.action} type="button" onClick={() => { onActionSelect(item.action as ActionOption); setIsMenuOpen(false); }} className="flex items-center gap-3 w-full p-3 text-gray-200 hover:bg-[#373a3c] rounded-lg transition-colors">
+                                <button key={item.action} type="button"
+                                    onClick={() => {
+                                        if (onActionSelect) {
+                                            onActionSelect(item.action as ActionOption);
+                                        }
+                                        setIsMenuOpen(false);
+                                    }} className="flex items-center gap-3 w-full p-3 text-gray-200 hover:bg-[#373a3c] rounded-lg transition-colors">
                                     {item.icon} <span className="text-sm">{item.label}</span>
                                 </button>
                             ))}
@@ -77,13 +85,23 @@ export default function ChatInput({
 
                 {/* Dynamic Send Button: Only shows when typing */}
                 {input.length > 0 && (
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="p-1.5 bg-gray-200 text-black rounded-full hover:bg-white transition-all disabled:opacity-50"
-                    >
-                        <ArrowUp size={18} strokeWidth={3} />
-                    </button>
+                    isLoading ?
+                        <button
+
+                            onClick={onStop}
+                            // disabled={isLoading}
+                            className="p-1.5 bg-gray-200 text-black rounded-full hover:bg-white transition-all disabled:opacity-50"
+                        >
+                            <SquareStop size={18} strokeWidth={3} />
+                        </button> :
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="p-1.5 bg-gray-200 text-black rounded-full hover:bg-white transition-all disabled:opacity-50"
+                        >
+                            <ArrowUp size={18} strokeWidth={3} />
+                        </button>
+
                 )}
 
                 {/* Model Display & Mic Icon*/}

@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useCompletion } from "@ai-sdk/react";
-import ChatInput, { type ActionOption } from "../../common component/ChatInput";
+import ChatInput, { type ActionOption } from "../common component/ChatInput";
 
 export default function StreamPage() {
-    const { input, handleInputChange, handleSubmit, completion, isLoading, setInput } =
+    const { input, handleInputChange, handleSubmit, completion, isLoading, setInput, stop } =
         useCompletion({ api: "/api/completion/stream" });
 
     const handleAction = (action: ActionOption) => {
@@ -17,6 +17,10 @@ export default function StreamPage() {
         handleSubmit(e);
         setInput("")
     };
+    const onStopFun = () => {
+        stop();
+        setInput(input)
+    }
 
     return (
         // h-screen + flex-col ensures the container takes full height
@@ -44,13 +48,14 @@ export default function StreamPage() {
                 </div>
             </div>
 
-            
+
             <div className="w-full pb-8 pt-4 bg-[#131314]">
                 <ChatInput
                     input={input}
                     handleInputChange={handleInputChange}
                     onSubmit={submitFun}
                     onActionSelect={handleAction}
+                    onStop={onStopFun}
                     onMicToggle={() => console.log("Mic toggled")}
                     isLoading={isLoading}
                 />
