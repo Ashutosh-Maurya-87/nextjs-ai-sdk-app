@@ -73,7 +73,7 @@ export default function StructureDataPage() {
                         {object?.recipe?.steps && (
                             <div className="space-y-4 pt-6">
                                 <h3 className="text-xl font-semibold text-gray-200 border-b border-gray-700 pb-2">
-                                    Instructions
+                                    Steps
                                 </h3>
 
                                 <ol className="space-y-4">
