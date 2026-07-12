@@ -154,6 +154,16 @@ export default function MultiModelChat() {
                                                         height={500}
                                                     />
                                                 }
+                                                if (part?.mediaType?.startsWith("application/pdf")) {
+                                                    return <iframe
+                                                        key={`${msg?.id}-${index}`}
+                                                        src={part.url} // This is the base64 or URL
+                                                        title={part?.filename ?? `attachment-${index}`}
+                                                        className="max-w-50 rounded-lg"
+                                                        width={500}
+                                                        height={500}
+                                                    />
+                                                }
                                                 return null
                                             default:
                                                 return null;
