@@ -14,6 +14,8 @@ interface ChatInputProps {
     onMicToggle?: () => void;
     selectedModel?: string;
     isLoading: boolean;
+    onFileSelect?: (file: FileList) => void;
+    fileInputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 export default function ChatInput({
@@ -24,7 +26,9 @@ export default function ChatInput({
     onMicToggle,
     selectedModel = "Flash-Lite",
     isLoading,
-    onStop
+    onStop,
+    onFileSelect,
+    fileInputRef
 }: ChatInputProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
@@ -46,6 +50,25 @@ export default function ChatInput({
                 onSubmit={onSubmit}
                 className="flex items-center gap-3 bg-[#1e1f20] hover:bg-[#282a2c] transition-colors rounded-full px-4 py-3 border border-transparent focus-within:border-gray-600"
             >
+                <div>
+                    <div>
+                        <label className="mb-4" htmlFor='file-upload'>
+                            <input
+                                multiple
+                                type="file"
+                                id="file-upload"
+                                className="hidden"
+                                onChange={(e) => {
+                                    if (e.target.files) {
+                                        onFileSelect?.(e.target.files);
+                                    }
+                                }}
+                                ref={fileInputRef}
+                            />
+                        </label>
+                    </div>
+                </div>
+
                 {/* Plus Menu */}
                 <div className="relative">
                     <button type="button" onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-gray-400 hover:text-white transition-colors">
@@ -61,11 +84,20 @@ export default function ChatInput({
                             ].map((item) => (
                                 <button key={item.action} type="button"
                                     onClick={() => {
-                                        if (onActionSelect) {
+                                        if (item.action === "upload") {
+                                            document.getElementById("file-upload")?.click();
+                                        } else if (onActionSelect) {
                                             onActionSelect(item.action as ActionOption);
                                         }
                                         setIsMenuOpen(false);
-                                    }} className="flex items-center gap-3 w-full p-3 text-gray-200 hover:bg-[#373a3c] rounded-lg transition-colors">
+                                    }}
+                                    // onClick={() => {
+                                    //     if (onActionSelect) {
+                                    //         onActionSelect(item.action as ActionOption);
+                                    //     }
+                                    //     setIsMenuOpen(false);
+                                    // }} 
+                                    className="flex items-center gap-3 w-full p-3 text-gray-200 hover:bg-[#373a3c] rounded-lg transition-colors">
                                     {item.icon} <span className="text-sm">{item.label}</span>
                                 </button>
                             ))}
@@ -84,25 +116,27 @@ export default function ChatInput({
                 />
 
                 {/* Dynamic Send Button: Only shows when typing */}
-                {input.length > 0 && (
-                    isLoading ?
-                        <button
+                {
+                    input.length > 0 && (
+                        isLoading ?
+                            <button
 
-                            onClick={onStop}
-                            // disabled={isLoading}
-                            className="p-1.5 bg-gray-200 text-black rounded-full hover:bg-white transition-all disabled:opacity-50"
-                        >
-                            <SquareStop size={18} strokeWidth={3} />
-                        </button> :
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="p-1.5 bg-gray-200 text-black rounded-full hover:bg-white transition-all disabled:opacity-50"
-                        >
-                            <ArrowUp size={18} strokeWidth={3} />
-                        </button>
+                                onClick={onStop}
+                                // disabled={isLoading}
+                                className="p-1.5 bg-gray-200 text-black rounded-full hover:bg-white transition-all disabled:opacity-50"
+                            >
+                                <SquareStop size={18} strokeWidth={3} />
+                            </button> :
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="p-1.5 bg-gray-200 text-black rounded-full hover:bg-white transition-all disabled:opacity-50"
+                            >
+                                <ArrowUp size={18} strokeWidth={3} />
+                            </button>
 
-                )}
+                    )
+                }
 
                 {/* Model Display & Mic Icon*/}
                 <div className="flex items-center gap-2 pl-2 border-l border-gray-600">
@@ -112,7 +146,7 @@ export default function ChatInput({
                         <Mic size={20} />
                     </button>
                 </div>
-            </form>
-        </div>
+            </form >
+        </div >
     );
 }

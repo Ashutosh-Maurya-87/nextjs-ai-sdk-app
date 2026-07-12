@@ -78,6 +78,7 @@ export default function Chat() {
                     handleInputChange={handleInputChange}
                     onSubmit={submitFun}
                     onActionSelect={() => console.log('action clicked')}
+
                     onStop={stop}
                     onMicToggle={() => console.log("Mic toggled")}
                     isLoading={isLoading || status !== "ready"}
