@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect, type ChangeEvent, type FormEvent } from "react";
-import { Plus, Mic, ChevronDown, Paperclip, HardDrive, Image, Layers, ArrowUp, SquareStop } from "lucide-react";
+import { Plus, Mic, ChevronDown, Paperclip, HardDrive, Image, Layers, ArrowUp, SquareStop, Music } from "lucide-react";
 
-export type ActionOption = "upload" | "drive" | "create-image" | "canvas";
-
+export type ActionOption = "upload" | "drive" | "create-image" | "canvas" | "audio";
 interface ChatInputProps {
     input: string;
     handleInputChange: (e: ChangeEvent<HTMLInputElement>) => void;
@@ -15,9 +14,13 @@ interface ChatInputProps {
     selectedModel?: string;
     isLoading: boolean;
     onFileSelect?: (file: FileList) => void;
+    onAudioSelect?: (file: File) => void;
     fileInputRef?: React.RefObject<HTMLInputElement | null>;
+    audioInputRef?: React.RefObject<HTMLInputElement | null>
 }
-
+interface AudioUploaderProps {
+    onAudioSelect: (file: File) => void;
+}
 export default function ChatInput({
     input,
     handleInputChange,
@@ -28,11 +31,12 @@ export default function ChatInput({
     isLoading,
     onStop,
     onFileSelect,
-    fileInputRef
+    onAudioSelect,
+    fileInputRef,
+    audioInputRef
 }: ChatInputProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
-
     // Close menu on outside click
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -69,6 +73,26 @@ export default function ChatInput({
                     </div>
                 </div>
 
+                <div>
+                    <div>
+                        <label className="mb-4" htmlFor='audio-upload'>
+                            <input
+                                type="file"
+                                id="audio-upload"
+                                className="hidden"
+                                accept="audio/*" // Sirf audio file allow karega
+                                ref={audioInputRef}
+                                onChange={(e) => {
+                                    if (e.target.files && e.target.files[0]) {
+                                        console.log("Audio selected:", e.target.files[0]);
+                                        onAudioSelect?.(e.target.files[0])
+                                        // Yahan handle karein audio file ko
+                                    }
+                                }}
+                            />
+                        </label>
+                    </div>
+                </div>
                 {/* Plus Menu */}
                 <div className="relative">
                     <button type="button" onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-gray-400 hover:text-white transition-colors">
@@ -81,22 +105,19 @@ export default function ChatInput({
                                 { label: "Add from Drive", action: "drive", icon: <HardDrive size={20} /> },
                                 { label: "Create image", action: "create-image", icon: <Image size={20} /> },
                                 { label: "Canvas", action: "canvas", icon: <Layers size={20} /> },
+                                { label: "Upload Audio", action: "audio", icon: <Music size={20} /> },
                             ].map((item) => (
                                 <button key={item.action} type="button"
                                     onClick={() => {
                                         if (item.action === "upload") {
                                             document.getElementById("file-upload")?.click();
+                                        } else if (item.action === "audio") {
+                                            audioInputRef?.current?.click(); // Audio input trigger
                                         } else if (onActionSelect) {
                                             onActionSelect(item.action as ActionOption);
                                         }
                                         setIsMenuOpen(false);
                                     }}
-                                    // onClick={() => {
-                                    //     if (onActionSelect) {
-                                    //         onActionSelect(item.action as ActionOption);
-                                    //     }
-                                    //     setIsMenuOpen(false);
-                                    // }} 
                                     className="flex items-center gap-3 w-full p-3 text-gray-200 hover:bg-[#373a3c] rounded-lg transition-colors">
                                     {item.icon} <span className="text-sm">{item.label}</span>
                                 </button>
