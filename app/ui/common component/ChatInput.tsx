@@ -12,6 +12,7 @@ interface ChatInputProps {
     onStop?: () => void;
     onMicToggle?: () => void;
     selectedModel?: string;
+    placeholderText?: string;
     isLoading: boolean;
     onFileSelect?: (file: FileList) => void;
     onAudioSelect?: (file: File) => void;
@@ -33,7 +34,8 @@ export default function ChatInput({
     onFileSelect,
     onAudioSelect,
     fileInputRef,
-    audioInputRef
+    audioInputRef,
+    placeholderText
 }: ChatInputProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
@@ -131,7 +133,7 @@ export default function ChatInput({
                     type="text"
                     value={input}
                     onChange={handleInputChange}
-                    placeholder="Ask anything..."
+                    placeholder={placeholderText ? placeholderText : "Ask anything..."}
                     className="flex-1 bg-transparent outline-none text-white placeholder-gray-400"
                     disabled={isLoading}
                 />
