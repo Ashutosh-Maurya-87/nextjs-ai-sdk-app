@@ -3,11 +3,12 @@ import { UIMessage, streamText, convertToModelMessages, tool, InferUITool, Infer
 import { anthropic } from "@ai-sdk/anthropic";
 
 const tools = {
-    // web_search_preview: openai.tools.webSearchPreview({})
-    web_search: anthropic.tools.webSearch_20260209({
-        maxUses: 1,
-    })
-} as ToolSet
+    web_search_preview: openai.tools.webSearchPreview({})
+    // web_search: anthropic.tools.webSearch_20260209({
+    //     maxUses: 1,
+    // })
+}
+// as ToolSet
 
 export type ChatTools = InferUITools<typeof tools>
 export type ChatMessage = UIMessage<never, UIDataTypes, ChatTools>
@@ -16,8 +17,8 @@ export async function POST(req: Request) {
 
     try {
         const res = streamText({
-            // model: openai.responses("gpt-5-mini"),
-            model: anthropic("claude-sonnet-4-20250514"),
+            model: openai.responses("gpt-5-mini"),
+            // model: anthropic("claude-sonnet-4-20250514"),
             messages: await convertToModelMessages(messages),
             tools,
             stopWhen: stepCountIs(2)
