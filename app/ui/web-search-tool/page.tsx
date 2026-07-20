@@ -56,7 +56,8 @@ export default function ToolChatPage() {
                                                         {part.text}
                                                     </div>
                                                 );
-                                            case "tool-web_search_preview":
+                                            // case "tool-web_search_preview":
+                                            case "tool-web_search":
                                                 return (
                                                     <div key={`${msg?.id}-getWeather-tool-${index}`} className="bg-[#18181b] border border-gray-700 p-4 rounded-xl mt-2">
                                                         {(() => {
