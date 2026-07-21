@@ -24,7 +24,9 @@ export async function POST(req: Request) {
             stopWhen: stepCountIs(2)
         })
 
-        return res.toUIMessageStreamResponse()
+        return res.toUIMessageStreamResponse({
+            sendSources: true
+        })
     } catch (err) {
         console.log('Error while generating the text', err)
         return new Response("Failed to stream chat completion", { status: 500 })

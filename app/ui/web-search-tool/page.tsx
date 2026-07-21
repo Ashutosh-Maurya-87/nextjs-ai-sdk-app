@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react";
+import React, { useState } from "react";
 import ChatInput from "../common component/ChatInput";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
@@ -40,8 +40,11 @@ export default function ToolChatPage() {
 
             <div className="flex-1 overflow-y-auto w-full max-w-2xl mx-auto px-4 py-8">
                 <div className="flex flex-col gap-6">
-                    {messages.map((msg, i) => (
-                        <div key={msg.id || i} className={`flex flex-col gap-1 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                    {messages.map((msg, i) => {
+                        // to show the source of data - like from which source that data are coming
+                        const sources = msg.parts.filter((part) => part.type === 'source-url')
+
+                        return <div key={msg.id || i} className={`flex flex-col gap-1 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                             <div className={`font-bold text-xs uppercase tracking-wider ${msg.role === 'user' ? 'text-blue-500' : 'text-emerald-500'}`}>
                                 {msg.role === 'user' ? "You :" : "AI :"}
                             </div>
@@ -76,9 +79,38 @@ export default function ToolChatPage() {
                                                                     );
                                                                 case "output-available":
                                                                     return (
-                                                                        <div key={`${msg?.id}-getWeather-${index}`}>
-                                                                            <div className="text-sm font-bold text-emerald-400 mb-1">Web Search Completed:</div>
-                                                                        </div>
+                                                                        <React.Fragment key={`${msg?.id}-getWeather-${index}`}>
+                                                                            <div>
+                                                                                <div className="text-sm font-bold text-emerald-400 mb-1">
+                                                                                    Web Search Completed:
+                                                                                </div>
+                                                                            </div>
+
+                                                                            {msg?.role === "assistant" && sources?.length > 0 && (
+                                                                                <div className="mt-2 space-y-2">
+                                                                                    <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                                                                        Sources: ({sources.length})
+                                                                                    </div>
+
+                                                                                    <div className="flex flex-wrap gap-2">
+                                                                                        {sources
+                                                                                            .filter((item) => item?.type === 'source-url')
+                                                                                            .map((item, i) => (
+                                                                                                <a
+                                                                                                    key={`${msg?.id}-${index}-${i}`}
+                                                                                                    href={item?.url}
+                                                                                                    target="_blank"
+                                                                                                    rel="noopener noreferrer"
+                                                                                                    title={item?.url}
+                                                                                                    className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-800 text-emerald-300 hover:bg-slate-700 transition-colors border border-slate-700 truncate max-w-xs"
+                                                                                                >
+                                                                                                    {item?.title || item?.url}
+                                                                                                </a>
+                                                                                            ))}
+                                                                                    </div>
+                                                                                </div>
+                                                                            )}
+                                                                        </React.Fragment>
                                                                     );
                                                                 case "output-error":
                                                                     return (
@@ -99,7 +131,7 @@ export default function ToolChatPage() {
                                 })}
                             </div>
                         </div>
-                    ))}
+                    })}
 
                     {isLoading && (
                         <div className="mb-4 pl-2">
