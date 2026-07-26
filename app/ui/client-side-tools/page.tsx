@@ -2,16 +2,52 @@
 import { useRef, useState } from "react";
 import ChatInput from "../common component/ChatInput";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from "ai";
 import { ChatMessage } from "@/app/api/client-side-tools/route";
 import { Image } from "@imagekit/next";
+
+function buildTransformationUrl(baseUrl: string, transformation: string): string {
+    const seprator = baseUrl.includes('?') ? "&" : "?"
+    return `${baseUrl}${seprator}tr=${transformation}`
+}
 export default function ClientSideToolPage() {
 
     // 1. Hook setup - removed manual states where useChat provides them
-    const { messages, sendMessage, status, error, stop } = useChat<ChatMessage>({
+    const { messages, sendMessage, status, error, stop, addToolResult } = useChat<ChatMessage>({
         transport: new DefaultChatTransport({
             api: '/api/client-side-tools',
         }),
+        sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+        async onToolCall({ toolCall }) {
+            if (toolCall.dynamic) return
+            switch (toolCall.toolName) {
+                case "changeBackground":
+                    const { imageUrl, backgroundPrompt } = toolCall.input
+
+                    const transformation = `e-changebg-prompt-${backgroundPrompt}`
+                    const transformedUrl = buildTransformationUrl(imageUrl, transformation)
+
+                    addToolResult({
+                        tool: "changeBackground",
+                        toolCallId: toolCall.toolCallId,
+                        output: transformedUrl
+                    })
+                    break;
+                case 'removeBackground':
+                    {
+                        const { imageUrl } = toolCall.input
+
+                        const transformation = `e-bgremove`
+                        const transformedUrl = buildTransformationUrl(imageUrl, transformation)
+                        addToolResult({
+                            tool: "removeBackground",
+                            toolCallId: toolCall.toolCallId,
+                            output: transformedUrl
+                        })
+                    }
+            }
+        }
+
     });
     const [input, setInput] = useState("");
     const [selectedFile, setSelectedFile] = useState<FileList | undefined>(undefined);
@@ -157,25 +193,88 @@ export default function ClientSideToolPage() {
                                                 switch (part.state) {
                                                     case "input-streaming":
                                                         return (
-                                                            <div key={`${msg?.id}-getWeather-tool`}>
+                                                            <div key={`${msg?.id}-generateImage-tool`}>
                                                                 <div className="text-sm text-blue-400 mb-2">Receiving image generation request...</div>
                                                                 <pre className="text-xs bg-black/30 p-2 rounded text-gray-400 overflow-x-auto">{JSON.stringify(part.input, null, 2)}</pre>
                                                             </div>
                                                         );
                                                     case "input-available":
                                                         return (
-                                                            <div key={`${msg?.id}-getWeather-tool-${index}`}>
+                                                            <div key={`${msg?.id}-generateImage-tool-${index}`}>
                                                                 <div className="text-sm text-gray-400">Generating image for {part.input.prompt}...</div>
                                                             </div>
                                                         );
                                                     case "output-available":
                                                         return (
-                                                            <div key={`${msg?.id}-getWeather-${index}`}>
+                                                            <div key={`${msg?.id}-generateImage-${index}`}>
                                                                 <div className="text-sm font-bold text-emerald-400 mb-1">Generated Image:</div>
                                                                 <Image
                                                                     urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}
                                                                     src={part.output}
                                                                     alt='Generated image'
+                                                                    width={500}
+                                                                    height={500}
+                                                                    className="rounded-lg"
+                                                                />
+                                                            </div>
+                                                        );
+                                                    case "output-error":
+                                                        return (
+                                                            <div key={`${msg?.id}-generateImage-${index}-tool`} className="text-red-400 text-sm">
+                                                                <span className="font-bold">Error on generating image:</span> <div>{part.errorText}</div>
+                                                            </div>
+                                                        );
+                                                    default:
+                                                        return null
+                                                }
+
+                                            case "tool-changeBackground":
+                                                switch (part.state) {
+                                                    case "input-available":
+                                                        return (
+                                                            <div key={`${msg?.id}-change-background-tool-${index}`}>
+                                                                <div className="text-sm text-gray-400">Changing Background to: {part.input.backgroundPrompt}</div>
+                                                            </div>
+                                                        );
+                                                    case "output-available":
+                                                        return (
+                                                            <div key={`${msg?.id}-getWeather-${index}`}>
+                                                                <div className="text-sm font-bold text-emerald-400 mb-1">Background Changed:</div>
+                                                                <Image
+                                                                    urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}
+                                                                    src={part.output}
+                                                                    alt='transformed image'
+                                                                    width={500}
+                                                                    height={500}
+                                                                    className="rounded-lg"
+                                                                />
+                                                            </div>
+                                                        );
+                                                    case "output-error":
+                                                        return (
+                                                            <div key={`${msg?.id}-getWeather-${index}-tool`} className="text-red-400 text-sm">
+                                                                <span className="font-bold">Error on generating image:</span> <div>{part.errorText}</div>
+                                                            </div>
+                                                        );
+                                                    default:
+                                                        return null
+                                                }
+                                            case "tool-removeBackground":
+                                                switch (part.state) {
+                                                    case "input-available":
+                                                        return (
+                                                            <div key={`${msg?.id}-change-background-tool-${index}`}>
+                                                                <div className="text-sm text-gray-400">Removing Background...</div>
+                                                            </div>
+                                                        );
+                                                    case "output-available":
+                                                        return (
+                                                            <div key={`${msg?.id}-removeBgtool-${index}`}>
+                                                                <div className="text-sm font-bold text-emerald-400 mb-1">Background Removed:</div>
+                                                                <Image
+                                                                    urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}
+                                                                    src={part.output}
+                                                                    alt='transformed image'
                                                                     width={500}
                                                                     height={500}
                                                                     className="rounded-lg"
