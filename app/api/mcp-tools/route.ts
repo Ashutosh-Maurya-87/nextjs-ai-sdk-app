@@ -2,12 +2,9 @@ import { openai } from "@ai-sdk/openai";
 import {
     UIMessage, streamText, convertToModelMessages, tool,
     InferUITool, InferUITools, UIDataTypes, stepCountIs,
-    // experimental_createMCPClient as createMCPClient,
-    // experi
 } from "ai";
 import { z } from 'zod'
 import { createMCPClient } from "@ai-sdk/mcp";
-// import {createMCP}
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp";
 
 const tools = {
